@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medeni Tokmak - Kimya Öğretmeni Ultra Web Sitesi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- Tema Renkleri ve Genel Stil --- */
+        :root {
+            --primary-color: #004d40; /* Koyu Çam Yeşili */
+            --secondary-color: #00695c; /* Açık Çam Yeşili */
+            --accent-color: #00897b; /* Daha Açık Çam Yeşili */
+            --bg-light: #f4f4f4;
+            --bg-dark: #1f2937; /* Koyu Gri */
+            --text-light: #e5e7eb;
+            --text-dark: #1f2937;
+        }
+
+        /* Light Mode Varsayılanları */
+        .bg-primary { background-color: var(--primary-color); }
+        .bg-secondary { background-color: var(--secondary-color); }
+        .hover\:bg-accent:hover { background-color: var(--accent-color); }
+        .text-primary { color: var(--primary-color); }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            scroll-padding-top: 80px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Daha belirgin gölge */
+            border-radius: 1rem; /* Daha yuvarlak köşeler */
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .content-area { flex: 1; }
+        .container { max-width: 1200px; }
+
+        /* --- Dark Mode Stilleri --- */
+        .dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+        .dark-mode .card, .dark-mode #hamburger-menu {
+            background-color: #374151; /* Koyu Kart Arkaplanı */
+            color: var(--text-light);
+            border-color: #4b5563;
+        }
+        .dark-mode .bg-white { background-color: #374151 !important; }
+        .dark-mode .text-gray-800 { color: var(--text-light) !important; }
+        .dark-mode .text-gray-600 { color: #d1d5db !important; }
+        .dark-mode .border-gray-200 { border-color: #4b5563 !important; }
+        .dark-mode .bg-gray-50 { background-color: #4b5563 !important; }
+        .dark-mode .text-gray-700 { color: var(--text-light) !important; }
+
+        /* Hamburger menü stili (off-canvas benzeri) */
+        #hamburger-menu {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+            background-color: var(--secondary-color);
+        }
+        #hamburger-menu.open {
+            transform: translateX(0);
+        }
+        /* SSS Akordiyon içeriği varsayılan olarak gizli */
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        /* Yüzen butonlar */
+        .floating-group {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .floating-lang {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 50;
+        }
+        #scroll-top-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- SABİT BAŞLIK VE NAVİGASYON -->
+    <header class="bg-primary text-white p-4 shadow-xl sticky top-0 z-20">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Sol: Site Başlığı (Anasayfa Linki) -->
+            <a href="#anasayfa" class="text-2xl sm:text-3xl font-extrabold flex items-center hover:text-gray-200 transition-colors">
+                <span class="mr-2 text-yellow-300 transform hover:scale-110 transition-transform">🔬</span> Medeni Tokmak Kimya
+            </a>
+            
+            <!-- Sağ: Menü Butonları -->
+            <div class="flex items-center space-x-4">
+                <a href="#anasayfa" class="hidden sm:block text-white text-lg px-3 py-1 rounded-full hover:bg-secondary transition-colors font-medium">Anasayfa</a>
+                
+                <!-- DARK MODE TOGGLE -->
+                <button id="dark-mode-toggle" class="text-white p-2 rounded-full hover:bg-secondary transition-colors focus:outline-none" title="Tema Değiştir">
+                    <svg id="sun-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg id="moon-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+
+                <!-- Hamburger Butonu -->
+                <button id="hamburger-btn" class="text-white p-2 rounded-full hover:bg-secondary transition-colors focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HAMBURGER (AÇILIR) MENÜ -->
+    <div id="hamburger-menu" class="fixed top-0 right-0 h-full w-64 shadow-2xl z-30 flex flex-col pt-16" role="menu" aria-expanded="false">
+        <button id="close-menu-btn" class="absolute top-4 right-4 text-white p-2 rounded-full hover:bg-primary transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <nav class="flex flex-col p-4 space-y-2">
+            <a href="#hakkimizda" class="menu-item block text-white text-xl p-3 rounded-lg hover:bg-primary transition-colors">Hakkımızda</a>
+            <a href="#hizmetler" class="menu-item block text-white text-xl p-3 rounded-lg hover:bg-primary transition-colors">Hizmetler</a>
+            <a href="#program" class="menu-item block text-white text-xl p-3 rounded-lg hover:bg-primary transition-colors">Ders Programı</a>
+            <a href="#sss" class="menu-item block text-white text-xl p-3 rounded-lg hover:bg-primary transition-colors">Sıkça Sorulan Sorular</a>
+            <a href="#iletisim" class="menu-item block text-white text-xl p-3 rounded-lg hover:bg-primary transition-colors">İletişim</a>
+        </nav>
+        <div class="p-4 mt-auto text-gray-300 text-sm border-t border-primary">
+            Başarı kimyanızda gizli.
+        </div>
+    </div>
+    
+    <!-- İÇERİK ALANI -->
+    <main class="content-area container mx-auto p-4 sm:p-6">
+        
+        <!-- ANASAYFA (HERO VE İSTATİSTİKLER) -->
+        <section id="anasayfa" class="card bg-white p-6 sm:p-10 mb-8 border border-gray-100">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6 order-2 md:order-1">
+                    <h2 class="text-5xl sm:text-6xl font-extrabold text-primary leading-tight">
+                        Kimya Öğreniminde <span class="text-accent underline decoration-wavy">Çığır Açan</span> Yöntemler.
+                    </h2>
+                    <p class="text-xl leading-relaxed text-gray-600">
+                        Medeni Tokmak ile sıkıcı formülleri bırakın; tepkimelerin kalbine inin. TYT, AYT ve lise derslerinde %100 başarı hedefi!
+                    </p>
+                    <a href="#hizmetler" class="inline-block bg-accent text-white py-3 px-8 rounded-full font-bold shadow-lg hover:shadow-xl hover:bg-primary transition-all duration-300 transform hover:translate-y-[-2px]">
+                        Hemen Başla!
+                    </a>
+                </div>
+                <div class="flex justify-center order-1 md:order-2">
+                    <!-- Placeholder SVG for visual appeal -->
+                    <svg class="w-full max-w-sm h-auto text-primary" viewBox="0 0 200 200" fill="currentColor">
+                        <circle cx="100" cy="100" r="90" fill="var(--secondary-color)" opacity="0.1"></circle>
+                        <path d="M100 10 L10 170 L190 170 Z" fill="var(--accent-color)" opacity="0.7"></path>
+                        <path d="M100 100 L50 170 L150 170 Z" fill="var(--primary-color)"></path>
+                        <text x="100" y="115" font-size="20" fill="white" text-anchor="middle" font-weight="bold">CHEM</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ANİMASYONLU İSTATİSTİKLER SAYACI -->
+            <div id="stats" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12 pt-8 border-t border-gray-200">
+                <div class="text-center p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <div id="stat1" data-target="1200" class="text-4xl font-extrabold text-accent">0+</div>
+                    <p class="text-gray-600 mt-1">Başarılı Öğrenci</p>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <div id="stat2" data-target="8" class="text-4xl font-extrabold text-accent">0+</div>
+                    <p class="text-gray-600 mt-1">Yıllık Tecrübe</p>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <div id="stat3" data-target="98" class="text-4xl font-extrabold text-accent">0%</div>
+                    <p class="text-gray-600 mt-1">Sınav Başarısı</p>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <div id="stat4" data-target="40" class="text-4xl font-extrabold text-accent">0+</div>
+                    <p class="text-gray-600 mt-1">Video İçerik</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- HİZMETLER (Gelişmiş - Tab'lı Yapı) -->
+        <section id="hizmetler" class="card bg-white p-6 sm:p-10 mb-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-primary mb-6 border-b-2 pb-2 border-primary">Kapsamlı Kimya Eğitim Hizmetleri</h2>
+            <p class="text-lg mb-8 text-gray-600">Öğrenme hedeflerinize ulaşmanız için tasarlanmış 3 özel yol.</p>
+
+            <!-- Hizmetler Tab Menüsü -->
+            <div class="flex border-b border-gray-200 overflow-x-auto whitespace-nowrap">
+                <button id="tab-lise" data-tab="lise" class="tab-btn py-3 px-6 text-base font-medium text-primary border-b-2 border-primary hover:bg-gray-50 flex-shrink-0">Lise Ara Sınıf</button>
+                <button id="tab-ayt" data-tab="ayt" class="tab-btn py-3 px-6 text-base font-medium text-gray-500 border-b-2 border-transparent hover:bg-gray-50 flex-shrink-0">TYT & AYT Sınav</button>
+                <button id="tab-ozel" data-tab="ozel" class="tab-btn py-3 px-6 text-base font-medium text-gray-500 border-b-2 border-transparent hover:bg-gray-50 flex-shrink-0">Birebir Özel Ders</button>
+            </div>
+
+            <!-- Hizmetler İçerikleri -->
+            <div id="tab-content-lise" class="tab-content p-6 border-l-4 border-primary bg-blue-50 mt-4 card shadow-none">
+                <h3 class="text-2xl font-bold text-primary mb-3">Lise Kimya Takviyesi (9-10-11. Sınıf)</h3>
+                <p>Müfredat uyumu, %100 yazılı garantisi ve kimya temellerini sağlamlaştırma.</p>
+                <div class="grid md:grid-cols-3 gap-4 mt-4">
+                    <div class="p-3 bg-white rounded-md shadow-sm border border-blue-200">9. Sınıf: Atom ve Periyodik Sistem</div>
+                    <div class="p-3 bg-white rounded-md shadow-sm border border-blue-200">10. Sınıf: Kimyasal Hesaplamalar</div>
+                    <div class="p-3 bg-white rounded-md shadow-sm border border-blue-200">11. Sınıf: Hız, Denge ve Çözeltiler</div>
+                </div>
+            </div>
+
+            <div id="tab-content-ayt" class="tab-content hidden p-6 border-l-4 border-accent bg-yellow-50 mt-4 card shadow-none">
+                <h3 class="text-2xl font-bold text-accent mb-3">TYT & AYT Sınav Hazırlık Kursları</h3>
+                <p>Organik Kimya, Termodinamik, Elektrokimya gibi kritik konulara derinlemesine odaklanma.</p>
+                <ul class="list-disc list-inside ml-4 mt-3 space-y-1">
+                    <li>Haftalık Soru Çözüm Maratonda.</li>
+                    <li>Mobil Uyumlu Ders Notları ve Denemeler.</li>
+                    <li>Sınav Stratejileri ve Zaman Yönetimi Eğitimi.</li>
+                </ul>
+            </div>
+
+            <div id="tab-content-ozel" class="tab-content hidden p-6 border-l-4 border-secondary bg-red-50 mt-4 card shadow-none">
+                <h3 class="text-2xl font-bold text-secondary mb-3">Kişiye Özel Birebir Kimya Eğitimi</h3>
+                <p>Eksik konulara yoğunlaşma, hızlı ilerleme ve özel mentörlük desteği.</p>
+                <p class="text-sm italic mt-2">Özel dersler için önce detaylı seviye tespit sınavı yapılmaktadır.</p>
+            </div>
+        </section>
+
+        <!-- BAŞARI HİKAYELERİ (TESTIMONIAL CAROUSEL) -->
+        <section id="basari" class="card bg-secondary text-white p-6 sm:p-10 mb-8 border border-secondary">
+            <h2 class="text-3xl font-bold mb-6 text-center">Öğrenci Başarı Hikayeleri</h2>
+            
+            <!-- Carousel Container -->
+            <div id="testimonial-carousel" class="relative overflow-hidden">
+                <div id="carousel-inner" class="flex transition-transform duration-500 ease-in-out">
+                    <!-- Hikaye 1 -->
+                    <div class="testimonial-slide w-full flex-shrink-0 p-4 text-center">
+                        <p class="text-xl italic mb-4">"Kimyadan nefret ediyordum. Medeni Hoca sayesinde 1. oldum! Anlatımı o kadar akıcı ki, not almayı unutuyorsunuz."</p>
+                        <p class="font-bold text-yellow-300">- Ayşe K. (Boğaziçi Tıp Fakültesi)</p>
+                    </div>
+                    <!-- Hikaye 2 -->
+                    <div class="testimonial-slide w-full flex-shrink-0 p-4 text-center">
+                        <p class="text-xl italic mb-4">"AYT Kimya netlerim 3'ten 12'ye çıktı. Konuyu değil, konunun mantığını öğretiyor. Gerçekten fark yarattı!"</p>
+                        <p class="font-bold text-yellow-300">- Mehmet S. (ODTÜ Mühendislik)</p>
+                    </div>
+                    <!-- Hikaye 3 -->
+                    <div class="testimonial-slide w-full flex-shrink-0 p-4 text-center">
+                        <p class="text-xl italic mb-4">"Online derslerin bu kadar verimli olabileceğini düşünmezdim. Harika interaktif materyaller kullanıyor."</p>
+                        <p class="font-bold text-yellow-300">- Zeynep A. (Lise 11. Sınıf)</p>
+                    </div>
+                </div>
+
+                <!-- Carousel Butonları -->
+                <button onclick="navigateCarousel(-1)" class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition-all ml-2" aria-label="Önceki Yorum">&#10094;</button>
+                <button onclick="navigateCarousel(1)" class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition-all mr-2" aria-label="Sonraki Yorum">&#10095;</button>
+
+                <!-- Dot Göstergeleri -->
+                <div id="carousel-dots" class="flex justify-center mt-4 space-x-2">
+                    <!-- JS tarafından doldurulacak -->
+                </div>
+            </div>
+        </section>
+
+        <!-- DERS PROGRAMI (SCHEDULE) -->
+        <section id="program" class="card bg-white p-6 sm:p-10 mb-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-primary mb-6 border-b-2 pb-2 border-primary">Güncel Ders ve Kamp Programı</h2>
+            <p class="text-lg mb-4 text-gray-600">Bu tablo, bu döneme ait planlanmış grup derslerini ve kamp tarihlerini göstermektedir.</p>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Ders/Kamp Adı</th>
+                            <th class="py-3 px-4 text-left">Sınıf/Seviye</th>
+                            <th class="py-3 px-4 text-left">Gün</th>
+                            <th class="py-3 px-4 text-left">Saat</th>
+                            <th class="py-3 px-4 text-left">Kontenjan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-3 px-4 font-medium">Temel Kimya Tekrarı</td>
+                            <td class="py-3 px-4">9-10. Sınıf</td>
+                            <td class="py-3 px-4">Pazartesi</td>
+                            <td class="py-3 px-4">18:00 - 19:30</td>
+                            <td class="py-3 px-4 text-green-600">5 Yer Kaldı</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-3 px-4 font-medium">AYT Organik Kimya Kampı</td>
+                            <td class="py-3 px-4">12 / Mezun</td>
+                            <td class="py-3 px-4">Salı / Perşembe</td>
+                            <td class="py-3 px-4">20:00 - 21:30</td>
+                            <td class="py-3 px-4 text-red-600">Doldu</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-3 px-4 font-medium">Elektrokimya Yoğunlaştırma</td>
+                            <td class="py-3 px-4">11. Sınıf</td>
+                            <td class="py-3 px-4">Cumartesi</td>
+                            <td class="py-3 px-4">10:00 - 12:00</td>
+                            <td class="py-3 px-4 text-yellow-600">8 Yer Kaldı</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SIKÇA SORULAN SORULAR (SSS) -->
+        <section id="sss" class="card bg-white p-6 sm:p-10 mb-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-primary mb-6 border-b-2 pb-2 border-primary">Sıkça Sorulan Sorular (SSS)</h2>
+            <div class="space-y-4">
+                
+                <!-- Soru 1 - Örnek Akordiyon -->
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 font-semibold text-left transition-colors">
+                        Online derslerde teknik altyapınız nedir?
+                        <span class="text-primary text-xl transition-transform transform rotate-0">+</span>
+                    </button>
+                    <div class="faq-content bg-white p-4 text-gray-700">
+                        <p>Derslerimizi özel olarak lisanslanmış sanal tahta (virtual whiteboard) uygulaması üzerinden yapıyoruz. Bu sayede öğrenci, tıpkı sınıftaymış gibi yazı yazabilir, not alabilir ve ders materyallerini anlık olarak paylaşabilir. Ses ve görüntü kalitesi, kesintisiz bir deneyim için optimize edilmiştir.</p>
+                    </div>
+                </div>
+
+                <!-- Soru 4 - Ekstra Detaylı Soru -->
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 font-semibold text-left transition-colors">
+                        Ders dışında soru sorma imkanı var mı?
+                        <span class="text-primary text-xl transition-transform transform rotate-0">+</span>
+                    </button>
+                    <div class="faq-content bg-white p-4 text-gray-700">
+                        <p>Evet! Öğrencilerimize ders saatleri dışında, özel bir mobil uygulama (veya WhatsApp grubu) üzerinden 7/24 soru sorma ve anında cevap alma desteği sunuyoruz. Takıldığınız her an, sadece bir fotoğraf kadar uzağınızdayız. Bu hizmet, tüm paketlerimize dahildir.</p>
+                    </div>
+                </div>
+                
+                <!-- Soru 3 -->
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 font-semibold text-left transition-colors">
+                        Ders ücretleri hakkında nasıl bilgi alabilirim?
+                        <span class="text-primary text-xl transition-transform transform rotate-0">+</span>
+                    </button>
+                    <div class="faq-content bg-white p-4 text-gray-700">
+                        <p>Ücretler dersin tipine (grup dersi, birebir, online/yüz yüze) ve süresine göre değişkenlik göstermektedir. Size en uygun paketi belirlemek ve güncel fiyat bilgisi almak için lütfen <a href="#iletisim" class="text-accent underline">iletişim formunu doldurarak</a> bize ulaşın.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- HAKKIMIZDA (Genişletilmiş) -->
+        <section id="hakkimizda" class="card bg-white p-6 sm:p-10 mb-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-primary mb-4 border-b-2 pb-2 border-primary">Medeni Tokmak Kimdir? - Vizyonumuz</h2>
+            <div class="grid md:grid-cols-3 gap-6 items-center">
+                <div class="md:col-span-2 space-y-4">
+                    <p class="text-lg font-medium">
+                        Medeni Tokmak, sadece bir öğretmen değil, aynı zamanda bir kimya mentörüdür. Amacı, öğrencilerin ezberden kurtulup, <strong class="text-accent">bilimsel düşünme yeteneğini</strong> kimya üzerinden geliştirmektir.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-secondary mt-4">Misyonumuz</h3>
+                    <ul class="list-none space-y-3">
+                        <li class="p-3 bg-gray-50 rounded-md border-l-4 border-accent shadow-sm">
+                            <strong class="text-primary">Kişiselleştirme:</strong> Her öğrencinin hızına ve öğrenme stiline uygun ders planları hazırlamak.
+                        </li>
+                        <li class="p-3 bg-gray-50 rounded-md border-l-4 border-accent shadow-sm">
+                            <strong class="text-primary">Teknoloji:</strong> En güncel online araçları kullanarak dersleri interaktif hale getirmek.
+                        </li>
+                    </ul>
+                </div>
+                <div class="md:col-span-1 flex justify-center">
+                    <img src="https://placehold.co/200x280/00695c/ffffff?text=Medeni+Hoca+%0ADeney" alt="Medeni Tokmak Deney Görseli" class="rounded-lg object-cover shadow-xl border-4 border-accent">
+                </div>
+            </div>
+        </section>
+
+
+        <!-- İLETİŞİM -->
+        <section id="iletisim" class="card bg-white p-6 sm:p-10 border border-gray-100">
+            <h2 class="text-3xl font-bold text-primary mb-4 border-b-2 pb-2 border-primary">İletişim & Randevu Talebi</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-secondary mb-3">Hızlı İletişim Formu</h3>
+                    <form id="contact-form" onsubmit="showContactMessage(event)" class="space-y-4">
+                        <input type="text" placeholder="Adınız Soyadınız" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-accent focus:border-accent">
+                        <input type="email" placeholder="E-posta Adresiniz" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-accent focus:border-accent">
+                        <select required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-accent focus:border-accent appearance-none">
+                            <option value="" disabled selected>Hizmet Seçiniz (Gerekli)</option>
+                            <option value="ayt">TYT & AYT Sınav Hazırlık</option>
+                            <option value="lise">Lise Ara Sınıf Takviyesi</option>
+                            <option value="ozel">Birebir Özel Ders Talebi</option>
+                            <option value="diger">Diğer Sorular</option>
+                        </select>
+                        <textarea rows="4" placeholder="Mesajınız / Sorunuz" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-accent focus:border-accent"></textarea>
+                        
+                        <button type="submit" class="w-full bg-accent text-white py-3 px-4 rounded-lg hover:bg-primary transition-colors font-bold shadow-lg transform hover:scale-[1.01]">
+                            Randevu/Bilgi Talebini Gönder
+                        </button>
+                    </form>
+                    <div id="contact-message" class="hidden mt-4 p-3 bg-green-100 text-green-800 rounded-lg font-medium border border-green-300">
+                        Talebiniz alınmıştır! En kısa sürede size dönüş yapılacaktır.
+                    </div>
+                </div>
+                
+                <div class="space-y-6">
+                    <h3 class="text-xl font-semibold text-secondary mb-3">İletişim ve Konum</h3>
+                    <div class="space-y-4 p-4 bg-gray-50 rounded-lg shadow-inner">
+                        <p class="flex items-center text-lg">
+                            <span class="text-accent mr-3 text-3xl">📧</span>
+                            <strong>E-posta:</strong> <a href="mailto:medeni.tokmak@ornek.com" class="text-blue-600 hover:underline">medeni.tokmak@ornek.com</a>
+                        </p>
+                        <p class="flex items-center text-lg">
+                            <span class="text-accent mr-3 text-3xl">📞</span>
+                            <strong>Telefon:</strong> (5XX) XXX XX XX
+                        </p>
+                        <p class="flex items-center text-lg">
+                            <span class="text-accent mr-3 text-3xl">📍</span>
+                            <strong>Adres:</strong> Örnek Eğitim Merkezi, Başarı Caddesi No:42, Kimya Şehri
+                        </p>
+                    </div>
+                    <!-- Mock Harita Placeholder -->
+                    <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 italic border border-gray-300">
+                        [Image of a stylized map pin on a map]
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER (Gelişmiş - Sitemap) -->
+    <footer class="bg-gray-800 text-white p-8 mt-12">
+        <div class="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="text-lg font-bold mb-3 text-accent">Hızlı Linkler</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#anasayfa" class="hover:text-accent transition-colors">Anasayfa</a></li>
+                    <li><a href="#hakkimizda" class="hover:text-accent transition-colors">Hakkımızda</a></li>
+                    <li><a href="#iletisim" class="hover:text-accent transition-colors">İletişim</a></li>
+                    <li><a href="#" onclick="showLanguageModal()" class="hover:text-accent transition-colors">Dil Seçenekleri</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold mb-3 text-accent">Hizmetlerimiz</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#hizmetler" onclick="setActiveTab('lise')" class="hover:text-accent transition-colors">Lise Takviye</a></li>
+                    <li><a href="#hizmetler" onclick="setActiveTab('ayt')" class="hover:text-accent transition-colors">TYT & AYT</a></li>
+                    <li><a href="#hizmetler" onclick="setActiveTab('ozel')" class="hover:text-accent transition-colors">Birebir Özel</a></li>
+                    <li><a href="#program" class="hover:text-accent transition-colors">Ders Programı</a></li>
+                </ul>
+            </div>
+            <div class="col-span-2 md:col-span-2">
+                <h4 class="text-lg font-bold mb-3 text-accent">Kimya Bültenimize Abone Olun</h4>
+                <p class="text-sm mb-3">En son kimya haberlerini ve ders notlarını kaçırmayın.</p>
+                <form onsubmit="showNewsletterMessage(event)" class="flex gap-2">
+                    <input type="email" placeholder="E-posta adresiniz" required class="p-2 flex-grow rounded-lg text-gray-900">
+                    <button type="submit" class="bg-accent px-4 py-2 rounded-lg hover:bg-primary transition-colors">Abone Ol</button>
+                </form>
+                <div id="newsletter-message" class="hidden text-green-400 mt-2 text-sm">Abone olduğunuz için teşekkürler!</div>
+            </div>
+        </div>
+        <div class="text-center border-t border-gray-700 mt-6 pt-4">
+            <p class="text-sm">&copy; 2025 Medeni Tokmak Kimya Dünyası. Tutkuyla Kodlandı.</p>
+        </div>
+    </footer>
+
+    <!-- KAYAN (FLOATİNG) BUTONLAR -->
+    <div class="floating-group">
+        <!-- Scroll Top Butonu -->
+        <button id="scroll-top-btn" class="w-14 h-14 bg-red-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl hover:bg-red-600 transition-colors transform hover:scale-110" title="Yukarı Çık">
+            &#9650; <!-- Up Arrow -->
+        </button>
+        <!-- WhatsApp Butonu -->
+        <a href="https://wa.me/905xxxxxxxxxx" target="_blank" class="w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl hover:bg-green-600 transition-colors transform hover:scale-110" title="WhatsApp ile İletişim">
+            &#x1F4AC; <!-- Konuşma Balonu Emoji -->
+        </a>
+        <!-- Telefon Arama Butonu -->
+        <a href="tel:+905xxxxxxxxxx" class="w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl hover:bg-blue-600 transition-colors transform hover:scale-110" title="Hemen Ara">
+            &#x1F4DE; <!-- Telefon Emoji -->
+        </a>
+    </div>
+
+    <!-- DİL SEÇENEĞİ MODAL'ı -->
+    <div id="lang-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden" aria-modal="true" role="dialog">
+        <div class="bg-white card p-6 w-11/12 max-w-sm dark-mode:bg-gray-700">
+            <h3 class="text-2xl font-bold mb-4 text-primary dark-mode:text-accent">Dil Seçenekleri</h3>
+            <p class="mb-4 text-gray-700 dark-mode:text-gray-300">Lütfen görüntülemek istediğiniz dili seçiniz:</p>
+            <div class="space-y-2">
+                <button class="lang-option w-full p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left dark-mode:bg-gray-600 dark-mode:hover:bg-gray-500">🇹🇷 Türkçe (TR)</button>
+                <button class="lang-option w-full p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left dark-mode:bg-gray-600 dark-mode:hover:bg-gray-500">🇺🇸 English (EN)</button>
+                <button class="lang-option w-full p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left dark-mode:bg-gray-600 dark-mode:hover:bg-gray-500">🇩🇪 Deutsch (DE)</button>
+                <button class="lang-option w-full p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left dark-mode:bg-gray-600 dark-mode:hover:bg-gray-500"> Kurdistan (KU)</button>
+            </div>
+            <button onclick="hideLanguageModal()" class="w-full mt-4 bg-primary text-white py-2 rounded-lg hover:bg-secondary transition-colors">Kapat</button>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRİPT LOGİĞİ -->
+    <script>
+        // Global Durumlar
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.testimonial-slide');
+        const totalSlides = slides.length;
+        const body = document.body;
+
+        // --- Yardımcı Kaydırma Fonksiyonu ---
+        function smoothScrollTo(targetId) {
+            const targetElement = document.getElementById(targetId);
+            const headerHeight = document.querySelector('header').offsetHeight;
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - headerHeight,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        // --- Hizmetler (Tab) Aktif Etme Fonksiyonu (Footer'dan çağrılır) ---
+        window.setActiveTab = function(tab) {
+            // Tüm butonları sıfırla
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-primary', 'font-bold', 'text-primary');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // İlgili butonu aktif et
+            const activeBtn = document.querySelector(`#tab-${tab}`);
+            if(activeBtn) {
+                activeBtn.classList.add('border-primary', 'font-bold', 'text-primary');
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            }
+
+            // Tüm içerikleri gizle
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // İlgili içeriği göster
+            const activeContent = document.getElementById(`tab-content-${tab}`);
+            if(activeContent) {
+                activeContent.classList.remove('hidden');
+            }
+        }
+
+
+        // --- Testimonial Carousel Logiği ---
+        function updateCarousel() {
+            const carouselInner = document.getElementById('carousel-inner');
+            const dotsContainer = document.getElementById('carousel-dots');
+            
+            // Kaydırma
+            carouselInner.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            // Noktaları güncelle
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('span');
+                dot.classList.add('w-3', 'h-3', 'rounded-full', 'bg-white', 'opacity-50', 'cursor-pointer');
+                if (i === currentSlide) {
+                    dot.classList.add('opacity-100', 'bg-accent');
+                }
+                dot.dataset.index = i;
+                dot.addEventListener('click', () => {
+                    currentSlide = i;
+                    updateCarousel();
+                });
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        window.navigateCarousel = function(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) {
+                currentSlide = totalSlides - 1;
+            } else if (currentSlide >= totalSlides) {
+                currentSlide = 0;
+            }
+            updateCarousel();
+        }
+
+        // Otomatik kaydırma (5 saniyede bir)
+        setInterval(() => {
+            navigateCarousel(1);
+        }, 5000); 
+
+        // --- Dark Mode Logiği ---
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        const setDarkMode = (isDark) => {
+            if (isDark) {
+                body.classList.add('dark-mode');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark-mode');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                localStorage.setItem('theme', 'light');
+            }
+        };
+
+        darkModeToggle.addEventListener('click', () => {
+            setDarkMode(!body.classList.contains('dark-mode'));
+        });
+
+        // Sayfa yüklendiğinde temayı kontrol et
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setDarkMode(true);
+        } else {
+            setDarkMode(false);
+        }
+
+
+        // --- Dil Seçeneği Modal Logiği ---
+        const langModal = document.getElementById('lang-modal');
+        const langBtn = document.getElementById('lang-btn'); // Kayan küre butonu
+
+        window.showLanguageModal = function() {
+            langModal.classList.remove('hidden');
+        };
+
+        window.hideLanguageModal = function() {
+            langModal.classList.add('hidden');
+        };
+        
+        // Kayan butonu modalı açmaya bağla
+        if(langBtn) {
+            langBtn.addEventListener('click', showLanguageModal);
+        }
+
+        // Modal dışına tıklanırsa kapat
+        langModal.addEventListener('click', (e) => {
+            if (e.target === langModal) {
+                hideLanguageModal();
+            }
+        });
+
+
+        // --- Animated Statistics Counter Logiği ---
+        const animateStats = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const stats = document.querySelectorAll('[data-target]');
+                    stats.forEach(stat => {
+                        const target = parseInt(stat.getAttribute('data-target'));
+                        let count = 0;
+                        const duration = 2000; 
+                        const step = target / (duration / 16); 
+                        
+                        const updateCount = () => {
+                            if (count < target) {
+                                count += step;
+                                stat.textContent = Math.ceil(count) + (stat.id === 'stat3' ? '%' : '+');
+                                requestAnimationFrame(updateCount);
+                            } else {
+                                stat.textContent = target + (stat.id === 'stat3' ? '%' : '+');
+                            }
+                        };
+                        updateCount();
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        };
+
+        // --- Scroll Top Butonu Logiği ---
+        const scrollTopBtn = document.getElementById('scroll-top-btn');
+        const toggleScrollTopBtn = () => {
+            if (window.scrollY > 300) {
+                scrollTopBtn.style.display = 'flex';
+            } else {
+                scrollTopBtn.style.display = 'none';
+            }
+        };
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        window.addEventListener('scroll', toggleScrollTopBtn);
+
+        // --- SSS Akordiyon Logiği ---
+        document.querySelectorAll('.faq-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const content = toggle.nextElementSibling;
+                const icon = toggle.querySelector('span');
+                
+                // Diğer açık akordiyonları kapatma
+                document.querySelectorAll('.faq-content').forEach(openContent => {
+                    if (openContent !== content && openContent.style.maxHeight !== '0px') {
+                        openContent.style.maxHeight = '0px';
+                        openContent.previousElementSibling.querySelector('span').classList.remove('rotate-90');
+                        openContent.previousElementSibling.querySelector('span').textContent = '+';
+                    }
+                });
+
+                // Tıklanan akordiyonu açma/kapama
+                if (content.style.maxHeight === '0px' || content.style.maxHeight === '') {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.classList.add('rotate-90');
+                    icon.textContent = '-';
+                } else {
+                    content.style.maxHeight = '0px';
+                    icon.classList.remove('rotate-90');
+                    icon.textContent = '+';
+                }
+            });
+        });
+        
+        // --- DOMContentLoaded Event Listener ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hamburger Menü Logiği
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+            const hamburgerMenu = document.getElementById('hamburger-menu');
+            const menuItems = document.querySelectorAll('.menu-item');
+            
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerMenu.classList.add('open');
+            });
+
+            closeMenuBtn.addEventListener('click', () => {
+                hamburgerMenu.classList.remove('open');
+            });
+            
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    hamburgerMenu.classList.remove('open');
+                    const targetId = this.getAttribute('href').substring(1);
+                    smoothScrollTo(targetId);
+                });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                if (!anchor.closest('#hamburger-menu')) {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href').substring(1);
+                        smoothScrollTo(targetId);
+                    });
+                }
+            });
+
+            // Tab Butonları Logiği
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => setActiveTab(button.dataset.tab));
+            });
+            setActiveTab('lise'); // Başlangıçta Lise sekmesini aktif et
+
+            // Testimonial Carousel'i başlat
+            updateCarousel();
+
+            // İstatistik sayacını başlat
+            const statsObserver = new IntersectionObserver(animateStats, { threshold: 0.5 });
+            statsObserver.observe(document.getElementById('stats'));
+            
+            // Simülasyon Mesajları
+            window.showNewsletterMessage = function(event) {
+                event.preventDefault();
+                document.getElementById('newsletter-message').classList.remove('hidden');
+                setTimeout(() => document.getElementById('newsletter-message').classList.add('hidden'), 3000);
+            }
+        });
+    </script>
+</body>
+</html>
